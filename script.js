@@ -44,3 +44,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadData();
 });
+
+    window.deleteEntry = (index) => {
+        const entries = JSON.parse(localStorage.getItem('studyTrackerEntries')) || [];
+        entries.splice(index, 1);
+        saveData(entries);
+        loadData();
+    };
+
+    loadData();
+});

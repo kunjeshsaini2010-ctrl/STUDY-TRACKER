@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="logo">
+                <span class="material-symbols-outlined">menu_book</span>
+                <h2>Study Tracker</h2>
+            </div>
+            <ul class="nav-links">
+                <li data-view="dashboard" class="active"><span class="material-symbols-outlined">dashboard</span> Dashboard</li>
+                <li data-view="subjects"><span class="material-symbols-outlined">library_books</span> Subjects</li>
+                <li data-view="analytics"><span class="material-symbols-outlined">bar_chart</span> Analytics</li>
+                <li data-view="history"><span class="material-symbols-outlined">history</span> History</li>
+            </ul>
+            <div class="sidebar-bottom">
+                <button id="theme-toggle" class="btn-icon"><span class="material-symbols-outlined">dark_mode</span> Theme</button>
+                <div class="data-actions">
+                    <button id="btn-export" title="Export JSON"><span class="material-symbols-outlined">download</span></button>
+                    <button id="btn-import-trigger" title="Import JSON"><span class="material-symbols-outlined">upload</span></button>
+                    <button id="btn-reset" title="Reset All Data"><span class="material-symbols-outlined">delete_forever</span></button>
+                    <input type="file" id="file-import" accept=".json" style="display: none;">
+                </div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <header>
+                <h1 id="page-title">Dashboard</h1>
+                <button class="btn-primary" id="btn-add-session">
+                    <span class="material-symbols-outlined">add</span> Log Study Session
+                </button>
+            </header>
+
+            <section id="view-dashboard" class="view active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Questions</h3>
+                        <p id="dash-total-q">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Attempted</h3>
+                        <p id="dash-attempted-q">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Remaining</h3>
+                        <p id="dash-remaining-q">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Today's Progress</h3>
+                        <p id="dash-today-q">0</p>
+                    </div>
+                </div>
+                <div class="card progress-card mt-2">
+                    <h3>Overall Completion</h3>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="dash-progress-bar" style="width: 0%;"></div>
+                    </div>
+                    <p id="dash-progress-text" class="text-right">0%</p>
+                </div>
+            </section>
+
+            <section id="view-subjects" class="view hidden">
+                <div class="tabs">
+                    <button class="tab-btn active" data-subject="physics">Physics</button>
+                    <button class="tab-btn" data-subject="chemistry">Chemistry</button>
+                    <button class="tab-btn" data-subject="mathematics">Mathematics</button>
+                </div>
+                
+                <div class="subject-toolbar mt-2">
+                    <div class="search-sort">
+                        <div class="input-group">
+                            <span class="material-symbols-outlined">search</span>
+                            <input type="text" id="search-chapters" placeholder="Search chapters...">
+                        </div>
+                        <select id="sort-chapters">
+                            <option value="name">Sort by Name</option>
+                            <option value="progress">Sort by Progress</option>
+                            <option value="remaining">Sort by Remaining</option>
+                        </select>
+                    </div>
+                    <button class="btn-secondary" id="btn-add-chapter">
+                        <span class="material-symbols-outlined">add</span> Add Chapter
+                    </button>
+                </div>
+
+                <div class="chapters-grid mt-2" id="chapters-container">
+                    </div>
+            </section>
+
+            <section id="view-analytics" class="view hidden">
+                <div class="stats-grid mb-2">
+                    <div class="stat-card"><h3>Current Streak</h3><p id="stat-streak">0 Days</p></div>
+                    <div class="stat-card"><h3>Avg Qs / Day</h3><p id="stat-avg">0</p></div>
+                </div>
+                <div class="charts-grid">
+                    <div class="card chart-container"><canvas id="chart-daily"></canvas></div>
+                    <div class="card chart-container"><canvas id="chart-subjects"></canvas></div>
+                    <div class="card chart-container full-width"><canvas id="chart-chapters"></canvas></div>
+                </div>
+            </section>
+
+            <section id="view-history" class="view hidden">
+                <div class="card">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Subject</th>
+                                <th>Chapter</th>
+                                <th>Questions</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-container">
+                            </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="modal-chapter" class="modal hidden">
+        <div class="modal-content card">
+            <h2 id="modal-chapter-title">Add Chapter</h2>
+            <form id="form-chapter">
+                <input type="hidden" id="chapter-id">
+                <div class="form-group">
+                    <label>Chapter Name</label>
+                    <input type="text" id="chapter-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Total Questions</label>
+                    <input type="number" id="chapter-total" min="1" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-text btn-close-modal">Cancel</button>
+                    <button type="submit" class="btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-session" class="modal hidden">
+        <div class="modal-content card">
+            <h2>Log Study Session</h2>
+            <form id="form-session">
+                <div class="form-group">
+                    <label>Subject</label>
+                    <select id="session-subject" required>
+                        <option value="physics">Physics</option>
+                        <option value="chemistry">Chemistry</option>
+                        <option value="mathematics">Mathematics</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Chapter</label>
+                    <select id="session-chapter" required>
+                        </select>
+                </div>
+                <div class="form-group">
+                    <label>Questions Solved</label>
+                    <input type="number" id="session-qs" min="1" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-text btn-close-modal">Cancel</button>
+                    <button type="submit" class="btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden">Message</div>
+
+    <script src="storage.js"></script>
+    <script src="analytics.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
